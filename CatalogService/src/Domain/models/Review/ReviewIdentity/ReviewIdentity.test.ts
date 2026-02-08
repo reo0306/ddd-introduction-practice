@@ -1,5 +1,5 @@
 import { ReviewId } from "../ReviewId/ReviewId";
-import { ReviewIdentity } from "./ReviewIdenttity";
+import { ReviewIdentity } from "./ReviewIdentity";
 
 describe("ReviewIdentity", () => {
     it("同じIDを持つエンティティは等価である", () => {
