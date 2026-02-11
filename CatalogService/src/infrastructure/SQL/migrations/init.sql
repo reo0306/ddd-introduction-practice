@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS "Book" (
     "title" TEXT NOT NULL,
     "author" TEXT NOT NULL,
     "priceAmount" DECIMAL(10, 2) NOT NULL,
-    "priceCurrency" "Currency" NOT NULL DEFAULT 'JPY',
+    "priceCurrency" "Currency" NOT NULL DEFAULT 'JPY'
 );
 
 CREATE TABLE IF NOT EXISTS "Review" (
