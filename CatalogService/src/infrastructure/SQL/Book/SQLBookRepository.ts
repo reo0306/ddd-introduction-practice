@@ -6,14 +6,15 @@ import { IBookRepository } from "../../../Domain/models/Book/IBookRepository";
 import { Price } from "../../..//Domain/models/Book/Price/Price";
 import { Title } from "../../../Domain/models/Book/Title/Title";
 
-
-import pool from "../db";
+import { SQLClientManager } from "../SQLClienttManager";
 
 export class SQLBookRepository implements IBookRepository {
+    constructor(private clientManager: SQLClientManager) {}
+
     private toDomain(row: any): Book {
         return Book.reconstruct(
             new BookIdentity(
-                new BookId(row.book_id),
+                new BookId(row.bookId),
                 new Title(row.title),
                 new Author(row.author)
             ),
@@ -25,15 +26,14 @@ export class SQLBookRepository implements IBookRepository {
     }
 
     async save(book: Book): Promise<void> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 INSERT INTO "Book"(
-                  "book_id",
+                  "bookId",
                   "title",
                   "author",
-                  "price_amount",
-                  "price_currency"
+                  "priceAmount",
+                  "priceCurrency"
                 ) VALUES ($1, $2, $3, $4, $5)
             `;
             const values = [
@@ -45,18 +45,15 @@ export class SQLBookRepository implements IBookRepository {
             ];
 
             await client.query(query, values);
-        } finally {
-            client.release();
-        }
+        });
     }
 
     async findById(bookId: BookId): Promise<Book | null> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 SELECT *
                 FROM "Book"
-                WHERE "book_id" = $1
+                WHERE "bookId" = $1
             `;
             const values = [bookId.value];
 
@@ -66,8 +63,6 @@ export class SQLBookRepository implements IBookRepository {
             }
 
             return this.toDomain(result.rows[0]);
-        } finally {
-            client.release();
-        }
+        });
     }
 }

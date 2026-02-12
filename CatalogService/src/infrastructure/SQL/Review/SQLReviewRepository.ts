@@ -7,15 +7,17 @@ import { Review } from "../../..//Domain/models/Review/Review";
 import { ReviewId } from "../../..//Domain/models/Review/ReviewId/ReviewId";
 import { ReviewIdentity } from "../../..//Domain/models/Review/ReviewIdentity/ReviewIdentity";
 
-import pool from "../db";
+import { SQLClientManager } from "../SQLClienttManager";
 
 export class SQLReviewRepository implements IReviewRepository {
+    constructor(private clientManager: SQLClientManager) {}
+
     private toDomain(row: any): Review {
         const commnet = row.comment ? new Comment(row.comment) : undefined;
 
         return Review.reconstruct(
-            new ReviewIdentity(new ReviewId(row.review_id)),
-            new BookId(row.book_id),
+            new ReviewIdentity(new ReviewId(row.reviewId)),
+            new BookId(row.bookId),
             new Name(row.reviewer_name),
             new Rating(row.rating),
             commnet
@@ -23,12 +25,11 @@ export class SQLReviewRepository implements IReviewRepository {
     }
 
     async save(review: Review): Promise<void> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 INSERT INTO "Review"(
-                  "review_id",
-                  "book_id",
+                  "reviewId",
+                  "bookId",
                   "name",
                   "rating",
                   "comment"
@@ -43,21 +44,18 @@ export class SQLReviewRepository implements IReviewRepository {
             ];
 
             await client.query(query, values);
-        } finally {
-            client.release();
-        }
+        });
     }
     
     async update(review: Review): Promise<void> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 UPDATE "Review"
-                SET "book_id" = $2,
+                SET "bookId" = $2,
                     "name" = $3,
                     "rating" = $4,
                     "comment" = $5
-                WHERE "review_id" = $1
+                WHERE "reviewId" = $1
             `;
             const values = [
                 review.reviewId.value,
@@ -71,32 +69,26 @@ export class SQLReviewRepository implements IReviewRepository {
             if (result.rowCount === 0) {
                 throw new Error(`Review with ID ${review.reviewId.value} not found.`);
             }
-        } finally {
-            client.release();
-        }
+        });
     }
     
     async delete(reviewId: ReviewId): Promise<void> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 DELETE FROM "Review"
-                WHERE "review_id" = $1
+                WHERE "reviewId" = $1
             `;
             const values = [reviewId.value];
 
             await client.query(query, values);
-        } finally {
-            client.release();
-        }
+        });
     }
     
     async findById(reviewId: ReviewId): Promise<Review | null> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 SELECT * FROM "Review"
-                WHERE "review_id" = $1
+                WHERE "reviewId" = $1
             `;
             const values = [reviewId.value];
 
@@ -106,26 +98,20 @@ export class SQLReviewRepository implements IReviewRepository {
             }
 
             return this.toDomain(result.rows[0]);
-        } finally {
-            client.release();
-        }
+        });
     }
     
     async findAllByBookId(bookId: BookId): Promise<Review[]> {
-        const client = await pool.connect();
-        try {
+        return await this.clientManager.withClient(async (client) => {
             const query = `
                 SELECT * FROM "Review"
-                WHERE "book_id" = $1
+                WHERE "bookId" = $1
             `;
             const values = [bookId.value];
 
             const result = await client.query(query, values);
 
             return result.rows.map((row) => this.toDomain(row));
-
-        } finally {
-            client.release();
-        }
+        });
     }
 }
