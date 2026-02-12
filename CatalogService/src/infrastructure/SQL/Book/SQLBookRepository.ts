@@ -19,8 +19,8 @@ export class SQLBookRepository implements IBookRepository {
                 new Author(row.author)
             ),
             new Price({
-                amount: parseFloat(row.price_amount),
-                currency: row.price_currency,
+                amount: parseFloat(row.priceAmount),
+                currency: row.priceCurrency,
             })
         );
     }

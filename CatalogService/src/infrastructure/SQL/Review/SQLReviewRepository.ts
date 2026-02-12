@@ -18,7 +18,7 @@ export class SQLReviewRepository implements IReviewRepository {
         return Review.reconstruct(
             new ReviewIdentity(new ReviewId(row.reviewId)),
             new BookId(row.bookId),
-            new Name(row.reviewer_name),
+            new Name(row.name),
             new Rating(row.rating),
             commnet
         );
