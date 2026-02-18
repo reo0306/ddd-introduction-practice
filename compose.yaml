@@ -1,0 +1,13 @@
+services:
+  ddd-app:
+    container_name: ddd_host
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    ports:
+      - 3000:3000
+    tty: true
+    volumes:
+    - .:/app:cached
+    working_dir: /app

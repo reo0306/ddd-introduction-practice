@@ -1,4 +1,4 @@
-import { MockTransactionManager } from "Application/shared/MockTransactionManager";
+import { container } from "tsyringe";
 import { BookId } from "Domain/models/Book/BookId/BookId";
 import { Comment } from "Domain/models/Review/Comment/Comment";
 import { Name } from "Domain/models/Review/Name/Name";
@@ -19,8 +19,8 @@ describe("EditReviewService", () => {
     let editReviewService: EditReviewService;
 
     beforeEach(() => {
-        reviewRepository = new InMemoryReviewRepository();
-        editReviewService = new EditReviewService(reviewRepository, new MockTransactionManager());
+        editReviewService = container.resolve(EditReviewService);
+        reviewRepository = editReviewService["reviewRepository"] as InMemoryReviewRepository;
     });
 
     it("should edit an existing review", async () => {
